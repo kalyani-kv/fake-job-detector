@@ -7,6 +7,7 @@ from flask import Flask, jsonify, render_template, request
 from config import rules, settings
 from src.predictor import load_model, predict_fraud_probability
 from src.risk_engine import analyze_job
+from src.scoring import combine_results
 from src.utils import validate_job_input
 
 logger = logging.getLogger(__name__)
@@ -16,14 +17,6 @@ LEVEL_CSS_CLASSES = {
     rules.LEVEL_SUSPICIOUS: "medium",
     rules.LEVEL_HIGH: "high",
 }
-
-PREVIEW_POSTING = (
-    "URGENT HIRING! Work from home data entry internship. "
-    "Earn Rs. 50,000 per week. 100% placement guaranteed. "
-    "Pay a refundable registration fee of Rs. 999 to confirm your seat. "
-    "Limited seats, apply immediately. Contact us on WhatsApp. "
-    "Share OTP to verify your profile."
-)
 
 
 def create_app():
@@ -43,6 +36,26 @@ def _read_request_data():
     return request.form
 
 
+def run_analysis(model, cleaned):
+    """Run rules + ML on validated input. Returns (result, ml_info)."""
+    rule_result = analyze_job(
+        cleaned["description"],
+        company_name=cleaned["company_name"],
+        company_website=cleaned["company_website"],
+        recruiter_email=cleaned["recruiter_email"],
+        job_title=cleaned["job_title"],
+        salary=cleaned["salary"],
+    )
+    probability = predict_fraud_probability(
+        model, cleaned["description"], cleaned["company_name"], cleaned["job_title"])
+    result = combine_results(rule_result, probability)
+    ml_info = {
+        "available": probability is not None,
+        "fraud_probability": None if probability is None else round(probability, 3),
+    }
+    return result, ml_info
+
+
 def register_routes(app):
     @app.get("/")
     def home():
@@ -52,20 +65,22 @@ def register_routes(app):
     def about():
         return render_template("about.html", rules=rules)
 
-    @app.get("/preview")
-    def preview():
-        """TEMPORARY: shows the result page with a sample posting."""
-        result = analyze_job(PREVIEW_POSTING)
-        probability = predict_fraud_probability(app.config["MODEL"], PREVIEW_POSTING)
-        ml = {"available": probability is not None, "fraud_probability": probability}
+    @app.post("/analyze")
+    def analyze_page():
+        cleaned, errors = validate_job_input(request.form)
+        if errors:
+            return render_template(
+                "index.html", form=request.form, errors=errors), 400
+
+        result, ml_info = run_analysis(app.config["MODEL"], cleaned)
         return render_template(
             "result.html",
             result=result,
-            ml=ml,
+            ml=ml_info,
             level_class=LEVEL_CSS_CLASSES[result["level"]],
             disclaimer=rules.DISCLAIMER,
-            job_title="Sample posting",
-            company_name="",
+            job_title=cleaned["job_title"],
+            company_name=cleaned["company_name"],
         )
 
     @app.get("/health")
@@ -82,28 +97,8 @@ def register_routes(app):
         if errors:
             return jsonify(error="Invalid input.", fields=errors), 400
 
-        rule_result = analyze_job(
-            cleaned["description"],
-            company_name=cleaned["company_name"],
-            company_website=cleaned["company_website"],
-            recruiter_email=cleaned["recruiter_email"],
-            job_title=cleaned["job_title"],
-            salary=cleaned["salary"],
-        )
-        probability = predict_fraud_probability(
-            app.config["MODEL"],
-            cleaned["description"],
-            cleaned["company_name"],
-            cleaned["job_title"],
-        )
-
-        return jsonify(
-            rules=rule_result,
-            ml={
-                "available": probability is not None,
-                "fraud_probability": None if probability is None else round(probability, 3),
-            },
-        )
+        result, ml_info = run_analysis(app.config["MODEL"], cleaned)
+        return jsonify(result=result, ml=ml_info)
 
 
 def register_error_handlers(app):

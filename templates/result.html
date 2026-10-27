@@ -57,10 +57,20 @@
 
 {% if ml and ml.available %}
 <section class="card">
-  <h2>Text pattern check (machine learning)</h2>
-  <p>A model trained on public job postings estimated a
-     <strong>{{ (ml.fraud_probability * 100) | round | int }}%</strong>
-     similarity to known fraudulent postings. It is one signal among several and can be wrong.</p>
+  <h2>How the score was calculated</h2>
+  <ul class="plain-list">
+    <li>Rule-based checks: <strong>{{ result.rule_score }}</strong> points</li>
+    {% if ml and ml.available %}
+      <li>Machine learning check: the model estimated a
+        <strong>{{ (ml.fraud_probability * 100) | round | int }}%</strong>
+        similarity to known fraudulent postings, which added
+        <strong>{{ result.ml_points }}</strong> points.</li>
+    {% else %}
+      <li>Machine learning check: not available, so only the rules were used.</li>
+    {% endif %}
+    <li>Final score: <strong>{{ result.score }}/100</strong></li>
+  </ul>
+  <p class="muted small">The model only adds points when it is more than 50% sure. It never lowers a rule-based score. It is one signal among several and can be wrong.</p>
 </section>
 {% endif %}
 

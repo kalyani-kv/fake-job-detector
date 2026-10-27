@@ -203,3 +203,8 @@ BASE_RECOMMENDATIONS = [
     "given in the posting.",
     "Do not share OTPs, UPI PINs, passwords or banking credentials.",
 ]
+# ---- Hybrid scoring (rules + machine learning) ---------------------------
+# ML adds points only when its fraud probability is above ML_START_PROBABILITY.
+# At probability 1.0 it adds ML_MAX_POINTS. It never lowers the rule score.
+ML_START_PROBABILITY = 0.5
+ML_MAX_POINTS = 30
