@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+  <h1>Fake Job / Internship Detector</h1>
+  <p>Protect yourself before you apply.</p>
+</section>
+
+<form id="analyze-form" class="card" method="post" action="/analyze" novalidate>
+  <label for="description">Job or internship description <span class="required">required</span></label>
+  <textarea id="description" name="description" rows="10" maxlength="10000"
+            placeholder="Paste the full job or internship posting here...">{{ form.get('description', '') }}</textarea>
+  <div class="field-footer">
+    <span class="error">{{ errors.get('description', '') }}</span>
+    <span id="char-count" class="muted"></span>
+  </div>
+
+  <div class="grid">
+    <div>
+      <label for="company_name">Company name</label>
+      <input id="company_name" name="company_name" type="text" maxlength="100"
+             value="{{ form.get('company_name', '') }}">
+      <span class="error">{{ errors.get('company_name', '') }}</span>
+    </div>
+    <div>
+      <label for="company_website">Company website</label>
+      <input id="company_website" name="company_website" type="text" inputmode="url"
+             placeholder="example.com" maxlength="200"
+             value="{{ form.get('company_website', '') }}">
+      <span class="error">{{ errors.get('company_website', '') }}</span>
+    </div>
+    <div>
+      <label for="recruiter_email">Recruiter email</label>
+      <input id="recruiter_email" name="recruiter_email" type="email" maxlength="254"
+             value="{{ form.get('recruiter_email', '') }}">
+      <span class="error">{{ errors.get('recruiter_email', '') }}</span>
+    </div>
+    <div>
+      <label for="job_title">Job title</label>
+      <input id="job_title" name="job_title" type="text" maxlength="100"
+             value="{{ form.get('job_title', '') }}">
+      <span class="error">{{ errors.get('job_title', '') }}</span>
+    </div>
+    <div>
+      <label for="salary">Salary / stipend</label>
+      <input id="salary" name="salary" type="text" placeholder="e.g. Rs. 15,000 per month" maxlength="50"
+             value="{{ form.get('salary', '') }}">
+      <span class="error">{{ errors.get('salary', '') }}</span>
+    </div>
+  </div>
+
+  <button id="analyze-button" class="button" type="submit">Analyze Job</button>
+  <p class="muted small">Do not paste passwords, OTPs or bank details here. We never need them.</p>
+</form>
+{% endblock %}

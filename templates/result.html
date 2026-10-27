@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Result - Fake Job Detector{% endblock %}
+
+{% block content %}
+<section class="result-header risk-{{ level_class }}">
+  <p class="eyebrow">Risk score</p>
+  <p class="score"><span>{{ result.score }}</span>/100</p>
+  <progress class="score-bar" value="{{ result.score }}" max="100">{{ result.score }}</progress>
+  <p class="level-badge">{{ result.level }}</p>
+  {% if job_title or company_name %}
+    <p class="muted">
+      {% if job_title %}{{ job_title }}{% endif %}
+      {% if job_title and company_name %} at {% endif %}
+      {% if company_name %}{{ company_name }}{% endif %}
+    </p>
+  {% endif %}
+</section>
+
+<p class="notice">{{ disclaimer }}</p>
+
+<section class="card">
+  <h2>Detected warning signs</h2>
+  {% if result.warnings %}
+    <ul class="signal-list">
+      {% for warning in result.warnings %}
+        <li class="warning">
+          <span class="icon">&#9888;</span>
+          <div>
+            <strong>{{ warning.label }}</strong>
+            <span class="points">+{{ warning.weight }} points</span>
+            <small>Matched: &ldquo;{{ warning.evidence }}&rdquo;</small>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No common warning signs were detected. This does not guarantee the job is genuine, so still verify the company.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Positive signals</h2>
+  {% if result.positives %}
+    <ul class="signal-list">
+      {% for positive in result.positives %}
+        <li class="positive">
+          <span class="icon">&#10003;</span>
+          <div><strong>{{ positive.label }}</strong></div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No positive signals were detected.</p>
+  {% endif %}
+</section>
+
+{% if ml and ml.available %}
+<section class="card">
+  <h2>Text pattern check (machine learning)</h2>
+  <p>A model trained on public job postings estimated a
+     <strong>{{ (ml.fraud_probability * 100) | round | int }}%</strong>
+     similarity to known fraudulent postings. It is one signal among several and can be wrong.</p>
+</section>
+{% endif %}
+
+<section class="card">
+  <h2>Why this score?</h2>
+  <p>{{ result.explanation }}</p>
+</section>
+
+<section class="card">
+  <h2>Recommended actions</h2>
+  <ul class="plain-list">
+    {% for advice in result.recommendations %}
+      <li>{{ advice }}</li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section class="card">
+  <h2>Already paid or shared details?</h2>
+  <p>Contact your bank immediately. In India you can report cyber fraud on the
+     National Cyber Crime Reporting Portal (cybercrime.gov.in) or call 1930.</p>
+</section>
+
+<p><a class="button" href="{{ url_for('home') }}">Analyze another job</a></p>
+{% endblock %}

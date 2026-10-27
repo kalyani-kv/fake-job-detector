@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}How it works - Fake Job Detector{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <h1>How it works</h1>
+  <p>A transparent risk check, not a verdict.</p>
+</section>
+
+<section class="card">
+  <h2>Important</h2>
+  <p>This tool estimates risk from signals in the text you provide. A low score does not prove a job is genuine, and a high score does not prove it is fake. Always verify a company independently.</p>
+</section>
+
+<section class="card">
+  <h2>Two checks combined</h2>
+  <ol class="plain-list">
+    <li><strong>Rule-based checks:</strong> look for known warning signs such as fees, guaranteed-job claims, requests for OTPs, urgency and suspicious contact methods.</li>
+    <li><strong>Machine learning check:</strong> a TF-IDF + Logistic Regression model trained on public job postings looks at wording patterns.</li>
+  </ol>
+</section>
+
+<section class="card">
+  <h2>Warning signs and points</h2>
+  <table>
+    <thead><tr><th>Warning sign</th><th>Points</th></tr></thead>
+    <tbody>
+      {% for rule in rules.TEXT_RULES %}
+        <tr><td>{{ rule.label }}</td><td>+{{ rule.weight }}</td></tr>
+      {% endfor %}
+      {% for rule in rules.FIELD_RULES.values() %}
+        <tr><td>{{ rule.label }}</td><td>+{{ rule.weight }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="muted">Each warning counts once, however often it is repeated. Positive signals can lower the score by at most {{ rules.MAX_POSITIVE_REDUCTION }} points, and never when a payment or sensitive-information request is found.</p>
+</section>
+
+<section class="card">
+  <h2>Risk levels</h2>
+  <ul class="plain-list">
+    <li><strong>{{ rules.LEVEL_LOW }}:</strong> 0 to {{ rules.SUSPICIOUS_THRESHOLD - 1 }}</li>
+    <li><strong>{{ rules.LEVEL_SUSPICIOUS }}:</strong> {{ rules.SUSPICIOUS_THRESHOLD }} to {{ rules.HIGH_RISK_THRESHOLD - 1 }}</li>
+    <li><strong>{{ rules.LEVEL_HIGH }}:</strong> {{ rules.HIGH_RISK_THRESHOLD }} to {{ rules.MAX_SCORE }}</li>
+  </ul>
+</section>
+
+<section class="card">
+  <h2>Limitations</h2>
+  <ul class="plain-list">
+    <li>It only reads the text you paste. It does not visit websites or contact anyone.</li>
+    <li>Scammers change their wording, so new tricks may be missed.</li>
+    <li>Genuine postings can occasionally be flagged.</li>
+  </ul>
+</section>
+{% endblock %}
