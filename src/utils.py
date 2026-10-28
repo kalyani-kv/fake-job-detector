@@ -44,6 +44,16 @@ def normalize_url(url):
     return candidate
 
 
+REQUIRED_FIELDS = {
+    "company_name": "Please enter the company name.",
+    "company_website": "Please enter the company website.",
+    "recruiter_email": "Please enter the recruiter's email address.",
+    "job_title": "Please enter the job title.",
+    "source": "Please tell us where you saw this posting.",
+    "posting_url": "Please paste the link to the posting.",
+}
+
+
 def validate_job_input(raw):
     """Validate form/JSON data. Returns (cleaned_values, errors).
 
@@ -57,6 +67,8 @@ def validate_job_input(raw):
         "recruiter_email": sanitize(raw.get("recruiter_email")),
         "job_title": sanitize(raw.get("job_title")),
         "salary": sanitize(raw.get("salary")),
+        "source": sanitize(raw.get("source")),
+        "posting_url": sanitize(raw.get("posting_url")),
     }
 
     description = cleaned["description"]
@@ -73,8 +85,12 @@ def validate_job_input(raw):
             f"(maximum {settings.MAX_DESCRIPTION_LENGTH} characters)."
         )
 
+    for field, message in REQUIRED_FIELDS.items():
+        if not cleaned[field]:
+            errors[field] = message
+
     for field in ("company_name", "job_title"):
-        if len(cleaned[field]) > settings.MAX_SHORT_FIELD_LENGTH:
+        if cleaned[field] and len(cleaned[field]) > settings.MAX_SHORT_FIELD_LENGTH:
             errors[field] = (
                 f"Please keep this under {settings.MAX_SHORT_FIELD_LENGTH} characters."
             )
@@ -87,11 +103,15 @@ def validate_job_input(raw):
     if cleaned["recruiter_email"] and not is_valid_email(cleaned["recruiter_email"]):
         errors["recruiter_email"] = "Please enter a valid email address."
 
-    if cleaned["company_website"]:
-        normalized = normalize_url(cleaned["company_website"])
-        if normalized is None:
-            errors["company_website"] = "Please enter a valid website address."
-        else:
-            cleaned["company_website"] = normalized
+    if cleaned["source"] and cleaned["source"] not in settings.POSTING_SOURCES:
+        errors["source"] = "Please choose one of the listed options."
+
+    for field in ("company_website", "posting_url"):
+        if cleaned[field] and field not in errors:
+            normalized = normalize_url(cleaned[field])
+            if normalized is None:
+                errors[field] = "Please enter a valid web address."
+            else:
+                cleaned[field] = normalized
 
     return cleaned, errors

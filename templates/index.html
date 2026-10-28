@@ -6,9 +6,11 @@
   <p>Protect yourself before you apply.</p>
 </section>
 
-<form id="analyze-form" class="card" method="post" action="/analyze" novalidate>
+<form id="analyze-form" class="card" method="post" action="{{ url_for('analyze_page') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
   <label for="description">Job or internship description <span class="required">required</span></label>
-  <textarea id="description" name="description" rows="10" maxlength="10000"
+  <textarea id="description" name="description" rows="10" required minlength="20" maxlength="10000"
             placeholder="Paste the full job or internship posting here...">{{ form.get('description', '') }}</textarea>
   <div class="field-footer">
     <span class="error">{{ errors.get('description', '') }}</span>
@@ -17,32 +19,49 @@
 
   <div class="grid">
     <div>
-      <label for="company_name">Company name</label>
-      <input id="company_name" name="company_name" type="text" maxlength="100"
+      <label for="job_title">Job title <span class="required">required</span></label>
+      <input id="job_title" name="job_title" type="text" required maxlength="100"
+             value="{{ form.get('job_title', '') }}">
+      <span class="error">{{ errors.get('job_title', '') }}</span>
+    </div>
+    <div>
+      <label for="company_name">Company name <span class="required">required</span></label>
+      <input id="company_name" name="company_name" type="text" required maxlength="100"
              value="{{ form.get('company_name', '') }}">
       <span class="error">{{ errors.get('company_name', '') }}</span>
     </div>
     <div>
-      <label for="company_website">Company website</label>
-      <input id="company_website" name="company_website" type="text" inputmode="url"
+      <label for="company_website">Company website <span class="required">required</span></label>
+      <input id="company_website" name="company_website" type="text" inputmode="url" required
              placeholder="example.com" maxlength="200"
              value="{{ form.get('company_website', '') }}">
       <span class="error">{{ errors.get('company_website', '') }}</span>
     </div>
     <div>
-      <label for="recruiter_email">Recruiter email</label>
-      <input id="recruiter_email" name="recruiter_email" type="email" maxlength="254"
+      <label for="recruiter_email">Recruiter email <span class="required">required</span></label>
+      <input id="recruiter_email" name="recruiter_email" type="email" required maxlength="254"
              value="{{ form.get('recruiter_email', '') }}">
       <span class="error">{{ errors.get('recruiter_email', '') }}</span>
     </div>
     <div>
-      <label for="job_title">Job title</label>
-      <input id="job_title" name="job_title" type="text" maxlength="100"
-             value="{{ form.get('job_title', '') }}">
-      <span class="error">{{ errors.get('job_title', '') }}</span>
+      <label for="source">Where did you see this posting? <span class="required">required</span></label>
+      <select id="source" name="source" required>
+        <option value="">Choose one...</option>
+        {% for option in sources %}
+          <option value="{{ option }}" {% if form.get('source') == option %}selected{% endif %}>{{ option }}</option>
+        {% endfor %}
+      </select>
+      <span class="error">{{ errors.get('source', '') }}</span>
     </div>
     <div>
-      <label for="salary">Salary / stipend</label>
+      <label for="posting_url">Link to the posting <span class="required">required</span></label>
+      <input id="posting_url" name="posting_url" type="text" inputmode="url" required
+             placeholder="https://..." maxlength="200"
+             value="{{ form.get('posting_url', '') }}">
+      <span class="error">{{ errors.get('posting_url', '') }}</span>
+    </div>
+    <div>
+      <label for="salary">Salary / stipend <span class="required">optional</span></label>
       <input id="salary" name="salary" type="text" placeholder="e.g. Rs. 15,000 per month" maxlength="50"
              value="{{ form.get('salary', '') }}">
       <span class="error">{{ errors.get('salary', '') }}</span>
@@ -50,6 +69,6 @@
   </div>
 
   <button id="analyze-button" class="button" type="submit">Analyze Job</button>
-  <p class="muted small">Do not paste passwords, OTPs or bank details here. We never need them.</p>
+  <p class="muted small">Do not paste passwords, OTPs or bank details here. We never need them. The link is only saved as text. We never open it.</p>
 </form>
 {% endblock %}

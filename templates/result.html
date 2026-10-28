@@ -8,16 +8,25 @@
   <p class="score"><span>{{ result.score }}</span>/100</p>
   <progress class="score-bar" value="{{ result.score }}" max="100">{{ result.score }}</progress>
   <p class="level-badge">{{ result.level }}</p>
-  {% if job_title or company_name %}
-    <p class="muted">
-      {% if job_title %}{{ job_title }}{% endif %}
-      {% if job_title and company_name %} at {% endif %}
-      {% if company_name %}{{ company_name }}{% endif %}
-    </p>
-  {% endif %}
+  <p class="muted">{{ details.job_title }} at {{ details.company_name }}</p>
 </section>
 
 <p class="notice">{{ disclaimer }}</p>
+
+<section class="card">
+  <h2>Details you provided</h2>
+  <table>
+    <tbody>
+      <tr><th>Job title</th><td>{{ details.job_title }}</td></tr>
+      <tr><th>Company</th><td>{{ details.company_name }}</td></tr>
+      <tr><th>Company website</th><td>{{ details.company_website }}</td></tr>
+      <tr><th>Recruiter email</th><td>{{ details.recruiter_email }}</td></tr>
+      <tr><th>Seen on</th><td>{{ details.source }}</td></tr>
+      <tr><th>Posting link</th><td>{{ details.posting_url }}</td></tr>
+    </tbody>
+  </table>
+  <p class="muted small">These details were checked for format only. We did not open the links, and a working link does not prove that a company is genuine.</p>
+</section>
 
 <section class="card">
   <h2>Detected warning signs</h2>
@@ -55,7 +64,6 @@
   {% endif %}
 </section>
 
-{% if ml and ml.available %}
 <section class="card">
   <h2>How the score was calculated</h2>
   <ul class="plain-list">
@@ -72,7 +80,6 @@
   </ul>
   <p class="muted small">The model only adds points when it is more than 50% sure. It never lowers a rule-based score. It is one signal among several and can be wrong.</p>
 </section>
-{% endif %}
 
 <section class="card">
   <h2>Why this score?</h2>

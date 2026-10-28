@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Create account - Fake Job Detector{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <h1>Create your account</h1>
+  <p>It takes less than a minute.</p>
+</section>
+
+<form class="card auth-card" method="post" action="{{ url_for('register') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <label for="email">Email</label>
+  <input id="email" name="email" type="email" required maxlength="254"
+         autocomplete="username" value="{{ form.get('email', '') }}">
+  <span class="error">{{ errors.get('email', '') }}</span>
+
+  <label for="password">Password</label>
+  <input id="password" name="password" type="password" required minlength="10" maxlength="128"
+         autocomplete="new-password">
+  <span class="error">{{ errors.get('password', '') }}</span>
+  <p class="muted small">At least 10 characters with an uppercase letter, a lowercase letter, a digit and a symbol.</p>
+
+  <label for="confirm_password">Confirm password</label>
+  <input id="confirm_password" name="confirm_password" type="password" required maxlength="128"
+         autocomplete="new-password">
+  <span class="error">{{ errors.get('confirm_password', '') }}</span>
+
+  <button class="button" type="submit">Create account</button>
+  <p class="muted small">Already registered? <a href="{{ url_for('login') }}">Log in</a></p>
+</form>
+{% endblock %}
